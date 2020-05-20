@@ -4,8 +4,10 @@ import contextlib
 import functools
 import time
 
+import numpy as np
+from more_itertools import flatten, chunked
+
 import metrics
-import iterutils
 
 class KNN:
 
@@ -22,10 +24,10 @@ class KNN:
         return list(map(lambda x: self.metric(x, sample), train))
 
     def _get_distances_parallel(self, sample):
-        chunks = iterutils.get_chunks(self.train, self.chunksize)
+        chunks = chunked(self.train, self.chunksize)
         distances_func = functools.partial(self._get_distances, sample)
         with concurrent.futures.ProcessPoolExecutor(self.n_jobs) as executor:
-            return iterutils.flat(executor.map(distances_func, chunks))
+            return flatten(executor.map(distances_func, chunks))
 
     def _get_neighbors(self, sample):
         if not self.parallel:
@@ -56,24 +58,24 @@ def timer():
 
 
 def get_result():
-    dataset = [[2.7810836, 2.550537003, 1],
-               [1.465489372, 2.362125076, 1],
-               [3.396561688, 4.400293529, 1],
-               [1.38807019, 1.850220317, 1],
-               [3.06407232, 3.005305973, 1],
-               [7.627531214, 2.759262235, 2],
-               [5.332441248, 2.088626775, 2],
-               [6.922596716, 1.77106367, 2],
-               [8.675418651, -0.242068655, 2],
-               [7.673756466, 3.508563011, 2]]
+    dataset = np.array([[2.7810836, 2.550537003, 1],
+                        [1.465489372, 2.362125076, 1],
+                        [3.396561688, 4.400293529, 1],
+                        [1.38807019, 1.850220317, 1],
+                        [3.06407232, 3.005305973, 1],
+                        [7.627531214, 2.759262235, 2],
+                        [5.332441248, 2.088626775, 2],
+                        [6.922596716, 1.77106367, 2],
+                        [8.675418651, -0.242068655, 2],
+                        [7.673756466, 3.508563011, 2]])
 
-    x = [[p[0], p[1]] for p in dataset]
-    y = [p[2] for p in dataset]
+    x = np.array([[p[0], p[1]] for p in dataset])
+    y = np.array([p[2] for p in dataset])
 
-    knn = KNN(n_neighbors=3, parallel=True)
+    knn = KNN(n_neighbors=3, parallel=True, metric='manhattan')
     knn.fit(x, y)
 
-    return knn.predict([8.0, 2.0])
+    return knn.predict([1.0, 2.0])
 
 
 with timer():

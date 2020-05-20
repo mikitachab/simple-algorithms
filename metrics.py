@@ -1,12 +1,12 @@
-import math
+import numpy as np
 
 
 def euclidean_distance(x, y):
-    return math.sqrt(sum(map(lambda t: (t[0] - t[1])**2, zip(x, y))))
+    return np.sqrt(np.sum((x - y) ** 2))
 
 
 def manhattan_distance(x, y):
-    return sum(map(lambda t: abs(t[0] - t[1]), zip(x, y)))
+    return np.sum(np.absolute(x - y))
 
 
 def get_metric(mectic):
